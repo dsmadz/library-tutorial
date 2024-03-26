@@ -1,6 +1,6 @@
 const express = require('express');
+const pool = require('./db');
 const app = express();
-
 const PORT = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
@@ -27,7 +27,7 @@ app.get('/createandseedtables', async (req, res) => {
         book_location_id INT NOT NULL,
         FOREIGN KEY(book_type_id) REFERENCES book_type(id),
         FOREIGN KEY(book_sub_type_id) REFERENCES book_sub_type(id),
-        FOREIGN KEY(book_language_id) REFERENCES book_language_(id),
+        FOREIGN KEY(book_language_id) REFERENCES book_language(id),
         FOREIGN KEY(book_location_id) REFERENCES book_location(id)
     );
     
@@ -154,7 +154,23 @@ app.get('/createandseedtables', async (req, res) => {
     res.send('Tables successfully created and seeded...');
 });
 
+// 404 route
+app.use((req, res, next) => {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
 
+// error handler
+app.use((err, req, res, next) => {
+    res.status(err.status).send(
+        `
+        <h1>${err.status}</h1>
+        <h2>Error: ${err.message}</h2>
+        <p>Stack: ${err.stack}</p>
+        `
+    );
+});
 
 app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);
